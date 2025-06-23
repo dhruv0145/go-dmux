@@ -1,7 +1,15 @@
 {
-  "endpoint":"http://test-sink:8000",
-  "timeout":"10s",
-  "retry_interval":"100ms",
+  "endpoint":"http://localhost:8080/test-endpoint",
+  "timeout": "100ms",
+  "retry_interval": "100ms",
+  "retry_backoff": {
+    "enabled": true,
+    "initial_interval": "100ms",
+    "multiplier": 1.5,
+    "randomization_factor": 0.5,
+    "max_interval": "5s"
+  },
+  "method": "GET",
   "headers": {
     "X_CLIENT_ID": "go-dumx"
   },
