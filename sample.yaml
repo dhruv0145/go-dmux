@@ -1,0 +1,65 @@
+go-dmux:
+  resources:
+    cpu: 2
+    memory: 10Gi
+
+  replicaCount: 1
+
+  annotations: |-
+    fcp.k8s.mtl/mtl-config: {{ .Values.global.name }}-mtl-config
+
+  dmux:
+    connections:
+      a2o-update-external-event-consumer:
+        type: kafka_http
+        sinkSize: 10
+        sourceQueueSize: 10
+        sinkQueueSize: 10
+        distributorType: Hash
+        batchSize: 1
+        pendingAcks: "10"
+        source:
+          consumerGroupName: a2o-update-external-event-consumer
+          zkPath: 10.66.158.162,10.67.222.87,10.68.221.245,10.68.158.50,10.69.30.89:2181/em-client-kafka-1
+          kafkaVersion: 2
+          kafkaTopic: entity-a2o-update-cdc-yak-0
+          forceRestart: false
+          readNewest: false
+          saslEnabled: true
+          username: emuser
+          passwordKey: KAFKA_CLIENT_USER_PASSWORD
+        sink:
+          endpoint: http://10.83.69.160/entity-manager/v1/entity/manager/dmux/em-event-consumer
+          method: POST
+          timeout: 10s
+          retryInterval: 1000ms
+          headers:
+            EVENT-COMPONENTS: A2O_EXTERNAL_EVENT_CONSUMER
+            SYNC-ENTITY: false
+            SYNC-INDEX: true
+            SYNC-AUDIT: false
+            CHECK-OB-FLAG: false
+
+      a2o-cdc-consumer:
+        type: kafka_http
+        sinkSize: 64
+        sourceQueueSize: 64
+        sinkQueueSize: 64
+        distributorType: Hash
+        batchSize: 1
+        pendingAcks: "10"
+        source:
+          consumerGroupName: a2o-cdc-consumer
+          zkPath: 10.66.158.162,10.67.222.87,10.68.221.245,10.68.158.50,10.69.30.89:2181/em-client-kafka-1
+          kafkaVersion: 2
+          kafkaTopic: a2o-cdc
+          forceRestart: false
+          readNewest: false
+          saslEnabled: true
+          username: emuser
+          passwordKey: KAFKA_CLIENT_USER_PASSWORD
+        sink:
+          endpoint: http://10.24.41.229/access/store/cdcEvents
+          method: POST
+          timeout: 10s
+          retryInterval: 100ms
